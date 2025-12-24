@@ -3,7 +3,7 @@ from supabase import create_client
 from datetime import datetime, timezone
 
 # -----------------------------
-# Supabase client (Cloud secrets)
+# Supabase client
 # -----------------------------
 supabase = create_client(
     st.secrets["SUPABASE_URL"],
@@ -51,12 +51,13 @@ if not st.session_state.address:
     if address_input:
         st.session_state.address = address_input
         st.session_state.units_list = load_units(address_input)
+        st.success(f"📍 Adreste {len(st.session_state.units_list)} taşıma birimi var")
         next_unit()
 else:
     st.write(f"📍 Adres: **{st.session_state.address}**")
-    st.write(f"Toplam HU sayısı: {len(st.session_state.units_list)}")
+    total = len(st.session_state.units_list)
     counted = sum(1 for u in st.session_state.units_list if u.get("counted"))
-    st.write(f"Sayılan HU: {counted} / {len(st.session_state.units_list)}")
+    st.write(f"Toplam HU: {total} / Sayılan HU: {counted}")
 
 # -----------------------------
 # UI: HU Barkodu
@@ -72,23 +73,20 @@ if st.session_state.current_unit:
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("✅ ONAYLA"):
+        if st.button("✅ BU"):
             supabase.table("stock_units").update({
                 "counted": True,
                 "status": "ok",
-                "counted_at": datetime.now(timezone.utc).isoformat()  # JSON uyumlu
+                "counted_at": datetime.now(timezone.utc).isoformat()
             }).eq("id", unit["id"]).execute()
 
             next_unit()
             st.experimental_rerun()
 
     with col2:
-        if st.button("❌ RED"):
+        if st.button("❌ DEĞİL"):
             st.session_state.current_unit = None
             st.warning("Lütfen doğru HU'yu okutun")
-
-else:
-    st.info("✅ Tüm HU’lar sayıldı veya adres seçin")
 
 # -----------------------------
 # UI: Adres Kontrolü Bitti
