@@ -27,6 +27,11 @@ if "current_unit" not in st.session_state:
 # ----------------------------------------
 # HELPERS
 # ----------------------------------------
+def get_current_timestamp():
+    """DateTime'ı JSON-serializable ISO string formatına çevirir"""
+    return datetime.utcnow().isoformat()
+
+
 def get_progress(address):
     total = supabase.table("stock_units") \
         .select("id", count="exact") \
@@ -123,7 +128,7 @@ if st.session_state.current_unit:
             supabase.table("stock_units").update({
                 "counted": True,
                 "status": "ok",
-                "counted_at": datetime.utcnow()
+                "counted_at": get_current_timestamp()
             }).eq("id", unit["id"]).execute()
 
             st.session_state.current_unit = None
